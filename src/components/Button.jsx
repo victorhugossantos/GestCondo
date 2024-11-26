@@ -1,14 +1,22 @@
-import React from 'react';
+import React from "react";
 
-const Button = ({ label, onClick, type = 'button', className = '', variant = 'primary', size = 'md' }) => {
-    // Adiciona as classes do Bootstrap para o tipo de botão (variantes como primary, secondary, etc.) e tamanho
-    const buttonClass = `btn btn-${variant} btn-${size} ${className}`;
-
+const Button = ({
+    label,
+    onClick,
+    type = "button",
+    className = "",
+    disable = false,
+}) => {
     return (
-        <button className={buttonClass} type={type} onClick={onClick}>
+        <button 
+            type={type}
+            onClick={onClick}
+            disabled={disable}
+            className={`py-2 px-4 rounded-md shadow-md font-semibold text-white bg-blue-500 hover:bg-blue-600 focus:outeline-none focus:ring focus:ring-blue-300 transition ${className}`}
+        
+        >
             {label}
         </button>
-    );
-};
-
-export default Button;
+    )
+}
+export default Button

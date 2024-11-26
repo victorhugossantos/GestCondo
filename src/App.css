@@ -4,11 +4,11 @@
 
 /* Estilos globais personalizados */
 body {
-  @apply text-gray-100 font-sans bg-gradient-to-r from-[#012a4a] via-[#01497c] to-[#89c2d9]; 
+  @apply font-sans bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700; 
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @apply text-white font-bold; /* Títulos brancos e em negrito */
+  @apply text-black font-bold; /* Títulos brancos e em negrito */
 }
 
 a {

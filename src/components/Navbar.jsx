@@ -30,7 +30,7 @@ const Navbar = () => {
     }, []);
 
     return (
-        <nav ref={menuRef} className="bg-blue-800 p-4">
+        <nav ref={menuRef} className="bg-indigo-900 p-4">
             <div className="max-w-7xl mx-auto flex justify-between items-center">
                 <div className="text-white font-bold text-xl">
                     
