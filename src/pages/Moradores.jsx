@@ -1,29 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
 import RegistrarMorador from "./RegistrarMorador";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Moradores = () => {
-    const [moradores] = useState([
-        {
-            id: 1,
-            nome: "João Silva",
-            cpf: "123.456.789-00",
-            bloco: "A",
-            unidade: "101",
-          },
-          {
-            id: 2,
-            nome: "Maria Oliveira",
-            cpf: "987.654.321-00",
-            bloco: "B",
-            unidade: "202",
-          },
-    ]);
-
+    const [moradores, setMoradores] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true)
     
-    const handleAdd = () => {
-        // Logica para abir o modal com o RegistrarMorador.jsx
+    // Funções do modal
+    const handleAdd = () => {    
         setIsModalOpen(true); // abrir modal
     }
 
@@ -31,12 +19,41 @@ const Moradores = () => {
         setIsModalOpen(false); // fechar modal
     }
 
+    // Função para mostrar os moradores
 
-    const handleDelete = () => {
+    const fetchMoradores = async () => {
+        setIsLoading(true)
+        try {
+            const moradoresRef = collection(db, 'moradores')
+            const snapshot = await getDocs(moradoresRef)
+            const moradoresList = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setMoradores(moradoresList)
+            
+        } catch (error){
+            console.error("erro ao carregar moradores", error)
+        } finally {
+            setIsLoading(false);
+        }
+        
+    }
+
+    // Função para exluir morador
+    const handleDelete = async (id) => {
         const confirmDelete = window.confirm("Tem certeza que deseja excluir este morador ?");
         if(confirmDelete) {
             // Logica para deletar no banco de dados
-            console.log('em breve será deletado')
+            try {
+                const moradorRef = doc(db, "moradores", id)
+                await deleteDoc(moradorRef)
+
+                // apos excluir, refaz a leitura da lista 
+                fetchMoradores();
+            } catch (error) {
+                console.error("Erro ao excluir Morador", error)
+            }
         }
     }
 
@@ -44,6 +61,11 @@ const Moradores = () => {
         // abrir o menu de cadastro de moradores
         console.log("botão para editar cliclado do ")
     }
+
+    // UseEffect para carregar os moradores ao montar o componente
+    useEffect(() => {
+        fetchMoradores();
+    }, []);
 
 
     return (
@@ -59,6 +81,8 @@ const Moradores = () => {
                         className="bg-blue-500 text-white px-4 py-2 rounded-lg"
                     />
                 </div>
+
+                {/* Tabela de moradores*/}
                 <div className="overflow-x-auto bg-white rounded-lg shadow-lg">
                     <table className="min-w-full bg-white">
                         <thead>
@@ -72,30 +96,34 @@ const Moradores = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {moradores.map((morador) => (
-                                <tr key={morador.id} className="border-b">
-                                    <td className="py-3 px-4 text-center">{morador.nome}</td>
-                                    <td className="py-3 px-4 text-center">{morador.cpf}</td>
-                                    <td className="py-3 px-4 text-center">{morador.nascimento}</td>
-                                    <td className="py-3 px-4 text-center">{morador.bloco}</td>
-                                    <td className="py-3 px-4 text-center">{morador.unidade}</td>
-                                    <td className="py-3 px-4 text-center space-x-2">
-                                        <Button 
-                                            label="Editar"
-                                            onClick={() => handleEdit(morador.id)}
-                                            className="bg-green-500 text-white px-3 py-1 rounded-md"
-                                        />
-                                        <Button 
-                                            label="Deletar"
-                                            onClick={() => handleDelete(morador.id)}
-                                            className="bg-red-500 text-white px-3 py-1 rounded-md"
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
+                            {isLoading ? (
+                                <tr><td colSpan="6" className="text-center py-6"><LoadingSpinner /></td></tr>
+                            ) : (
+                                moradores.map((morador) => (
+                                    <tr key={morador.id} className="border-b">
+                                        <td className="py-3 px-4 text-center">{morador.nome}</td>
+                                        <td className="py-3 px-4 text-center">{morador.cpf}</td>
+                                        <td className="py-3 px-4 text-center">{morador.nascimento}</td>
+                                        <td className="py-3 px-4 text-center">{morador.bloco}</td>
+                                        <td className="py-3 px-4 text-center">{morador.unidade}</td>
+                                        <td className="py-3 px-4 text-center space-x-2">
+                                            <Button 
+                                                label="Editar"
+                                                onClick={() => handleEdit(morador.id)}
+                                                className="bg-green-500 text-white px-3 py-1 rounded-md"
+                                            />
+                                            <Button 
+                                                label="Deletar"
+                                                onClick={() => handleDelete(morador.id)}
+                                                className="bg-red-500 text-white px-3 py-1 rounded-md"
+                                            />
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
-                    {moradores.length === 0 && (
+                    {moradores.length === 0 && !isLoading && (
                         <div className="text-center py-6 text-gray-600">Nenhum morador registrado.</div>
                     )}
                 </div>
